@@ -169,12 +169,12 @@ class Cleanup(BaseTask):
         return luigi.LocalTarget(f"{self.output_dir}/finalized")
 
     def run(self):
-        # Проверяем, существует ли директория для финальных данных, если да — удаляем её
+        # Удаляем директорию, если она уже существует
         if os.path.exists(self.output().path):
             print(f"Directory {self.output().path} already exists. Removing...")
-            shutil.rmtree(self.output().path)  # Удаляем существующую директорию
+            shutil.rmtree(self.output().path)
 
-        # Создаем директорию для финальных данных
+        # Создаём новую директорию для финальных данных
         os.makedirs(self.output().path, exist_ok=True)
 
         # Удаляем временные данные, если они существуют
@@ -188,11 +188,12 @@ class Cleanup(BaseTask):
                 print(f"Removing temporary directory: {temp_dir}")
                 shutil.rmtree(temp_dir, ignore_errors=True)
 
-        # Копируем содержимое из предыдущего шага (FilterProbes) в финальную директорию
+        # Копируем данные из предыдущего шага
         print(f"Copying filtered data to {self.output().path}")
-        shutil.copytree(self.input().path, self.output().path)
+        shutil.copytree(self.input().path, self.output().path, dirs_exist_ok=True)  # Обработка существующих директорий
 
         print("Cleanup task completed successfully.")
+
 
 # Запуск пайплайна
 if __name__ == "__main__":
